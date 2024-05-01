@@ -1,0 +1,67 @@
+install.packages("fishmethods")
+
+Check_Install.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg,dependencies = TRUE) else print(paste0("'",pkg,"' has been installed already!"))
+  sapply(pkg, require, character.only = TRUE)
+}
+
+Check_Install.packages("fishmethods")
+library(fishmethods)
+setwd
+
+Example <- read.csv("Chital.csv") 
+# Read in the simulated annual catch data set
+
+# We have removed the first 11 rows of data as these are all prefishery and zero, also removed the fleet column as only one fleet so not needed
+names(Example) <- c("year","catch")
+# this makes sure the headings are correct for later use
+print(head(Example))
+
+
+par(mfrow=c(2,2))
+dbsraOut <- dbsra(year = Example$year, 
+                  catch = Example$catch, 
+                  catchCV = NULL, 
+                  catargs = list(dist="none",low=0,up=Inf,unit="Kg"),
+                  agemat=2, 
+                  k = list(low=100,up=723890,tol=0.01,permax=1000), 
+                  b1k = list(dist="none",low=0.01,up=0.99,mean=0.8,sd=0.1),
+                  btk = list(dist="beta",low=0.01,up=0.99,mean=0.4,sd=0.1,
+                             refyr=max(Example$year)+1),
+                  fmsym = list(dist="lnorm",low=0.1,up=2,mean=-1,sd=0.2),
+                  bmsyk = list(dist="beta",low=0.05,up=0.95,mean=0.4,sd=0.05),
+                  M = list(dist="lnorm",low=0.001,up=1,mean=-0.51,sd=0.4),
+                  graph=c(1:14),
+                  nsims = 15000,grout=2)
+print(dbsraOut$Estimates)
+
+par(mfrow=c(1,1))
+
+# Read in the biomass output, remove the rejected trajectories, and add headers
+Years <- c(Example$year,Example$year[length(Example$year)]+1)
+BioT <- read.csv("Biotraj-dbsra.csv",head=F)
+BioT <- BioT[BioT[,1]==1,-1]
+colnames(BioT) <- Years
+Nyear <- length(Years)
+BiomassSummary <- matrix(0,ncol=5,nrow=Nyear)
+for (Iyear in 1:Nyear)
+  BiomassSummary[Iyear,] <- quantile(BioT[,Iyear],
+                                     prob=c(0.05,0.25,0.5,0.75,0.95))
+ymax <- max(BiomassSummary)
+plot(Years,BiomassSummary[,3],xlab="Year",
+     ylab="Biomass",ylim=c(0,ymax*1.1),
+     yaxs="i",type="l",xaxs="i")
+polygon(c(Years,rev(Years)),c(BiomassSummary[,1],
+                              rev(BiomassSummary[,5])),col="gray50")
+polygon(c(Years,rev(Years)),c(BiomassSummary[,2],
+                              rev(BiomassSummary[,4])),col="gray90")
+lines(Years,BiomassSummary[,3],col='red',lwd=2)
+
+print(dbsraOut$Parameters)
+
+ProjRes <- dlproj(dlobj=dbsraOut,projyears=10,projtype=2,projcatch=c(3200,3200,3200,3200,3200,3200,3200,3200,3200,3200))
+print(ProjRes)
+print(ProjRes$Estimates)
+

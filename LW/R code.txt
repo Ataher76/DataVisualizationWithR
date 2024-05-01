@@ -1,0 +1,54 @@
+install.packages("openxlsx")
+install.packages("TropFsihR")
+install.packages("LBSPR")
+install.packages("LBB")
+
+
+library(openxlsx)
+x<- read_excel("LW.xlsx")
+View(x)
+x <- read_excel("LW.xlsx")
+
+colomn1<- log(x$Length)
+colomn1
+colomn2<- log(x$Weight)
+colomn2
+plot(colomn2~colomn1)
+
+model<-lm(colomn2~colomn1)
+summary(model)
+
+a<- exp(-5.53)
+a
+z<- abline(model,  xlab="Log(L)", ylab="Log(W)", lw=2, col=2, main="L-W relationship")
+
+
+By GGPLOT2
+library(ggplot2)
+library(openxlsx)
+library(readxl)
+#setw
+
+data <- read_excel("LW.xlsx")
+data
+logl <- log(data$Length)
+logl
+logw <- log(data$Weight)
+logw
+df <- data.frame(x=logl, y=logw)
+df
+ggplot(df, aes(x=x, y=y))+
+  geom_point(col=2)+
+  theme_classic()+
+  geom_smooth(method = lm,col=4, size=0.5)+
+  ggtitle("Length Weight relationship")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+
+
+
+
+
+
+

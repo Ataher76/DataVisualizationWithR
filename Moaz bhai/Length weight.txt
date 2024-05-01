@@ -1,0 +1,23 @@
+log_model <- lm(log(weight) ~ log(Length), lw)
+summary(log_model)
+
+a <- exp(coef(log_model)[1])
+a
+b <- coef(log_model)[2]
+b
+
+lw %>% 
+  ggplot(aes(log(Length), log(weight), color = weight))+
+  geom_point(size = 2, alpha = 1, show.legend = F)+
+  geom_smooth(method = "lm", se = F, show.legend = F, color = "red", lwd = 0.8)+
+  theme_classic()+
+  theme(axis.title = element_text(color = "black"),
+        axis.text = element_text(colour = "black")
+  )+
+  labs( y = "logWight (g)", x = "logLenght (cm)")+
+  annotate("text", x = 2.5, y = 5.8, label = "P value= 0.00")+
+  annotate("text",x = 2.55, y = 5.5, label = "Adjusted R^2 = 0.95")+
+  annotate("text", x = 2.508, y = 5.2, label = " y = 3.21x - 5.94")+
+  annotate("text", x = 2.6, y = 4.9, label = " Log(W) = Log(a) + bLog(L)")+
+  annotate("text", x = 2.64, y = 4.6, label = " Relationship, W = 0.0026L^3.21")
+  
